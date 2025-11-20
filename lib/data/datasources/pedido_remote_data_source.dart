@@ -29,24 +29,86 @@ class PedidoRemoteDataSourceImpl implements PedidoRemoteDataSource {
 
   @override
   Future<void> createPedido(PedidoModel pedido) async {
-    await client.post(
+    final jsonData = pedido.toJson();
+    print('Enviando pedido: $jsonData'); // Debug
+    
+    final response = await client.post(
       Uri.parse(baseUrl),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(pedido.toJson()),
+      body: jsonEncode(jsonData),
     );
+    
+    print('Status code: ${response.statusCode}');
+    print('Response body: ${response.body}');
+    
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      try {
+        final error = jsonDecode(response.body);
+        
+        if (error['validationErrors'] != null) {
+          final validationErrors = error['validationErrors'] as Map<String, dynamic>;
+          final errorMessages = validationErrors.values.join('\n');
+          throw Exception(errorMessages);
+        }
+        
+        throw Exception(error['message'] ?? error['error'] ?? 'Error al crear pedido');
+      } catch (e) {
+        if (e is Exception) rethrow;
+        throw Exception('Error al crear pedido: ${response.body}');
+      }
+    }
   }
 
   @override
   Future<void> updatePedido(PedidoModel pedido) async {
-    await client.put(
+    final jsonData = pedido.toJson();
+    print('Actualizando pedido: $jsonData');
+    
+    final response = await client.put(
       Uri.parse('$baseUrl/${pedido.idPedido}'),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(pedido.toJson()),
+      body: jsonEncode(jsonData),
     );
+    
+    print('Status code: ${response.statusCode}');
+    print('Response body: ${response.body}');
+    
+    if (response.statusCode != 200) {
+      try {
+        final error = jsonDecode(response.body);
+        
+        if (error['validationErrors'] != null) {
+          final validationErrors = error['validationErrors'] as Map<String, dynamic>;
+          final errorMessages = validationErrors.values.join('\n');
+          throw Exception(errorMessages);
+        }
+        
+        throw Exception(error['message'] ?? error['error'] ?? 'Error al actualizar pedido');
+      } catch (e) {
+        if (e is Exception) rethrow;
+        throw Exception('Error al actualizar pedido: ${response.body}');
+      }
+    }
   }
 
   @override
   Future<void> deletePedido(int id) async {
-    await client.delete(Uri.parse('$baseUrl/$id'));
+    final response = await client.delete(Uri.parse('$baseUrl/$id'));
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      try {
+        final error = jsonDecode(response.body);
+        
+        if (error['validationErrors'] != null) {
+          final validationErrors = error['validationErrors'] as Map<String, dynamic>;
+          final errorMessages = validationErrors.values.join('\n');
+          throw Exception(errorMessages);
+        }
+        
+        throw Exception(error['message'] ?? error['error'] ?? 'Error al eliminar pedido');
+      } catch (e) {
+        if (e is Exception) rethrow;
+        throw Exception('Error al eliminar pedido: ${response.body}');
+      }
+    }
   }
 }

@@ -6,4 +6,5 @@ abstract class PedidoRepository {
   Future<Pedido> createPedido(Pedido pedido);
   Future<Pedido> updatePedido(int id, Pedido pedido);
   Future<void> deletePedido(int id);
+
 }

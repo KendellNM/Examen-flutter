@@ -29,24 +29,75 @@ class ClienteRemoteDataSourceImpl implements ClienteRemoteDataSource {
 
   @override
   Future<void> createCliente(ClienteModel cliente) async {
-    await client.post(
+    final response = await client.post(
       Uri.parse(baseUrl),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(cliente.toJson()),
     );
+    
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      try {
+        final error = jsonDecode(response.body);
+        
+        if (error['validationErrors'] != null) {
+          final validationErrors = error['validationErrors'] as Map<String, dynamic>;
+          final errorMessages = validationErrors.values.join('\n');
+          throw Exception(errorMessages);
+        }
+        
+        throw Exception(error['message'] ?? error['error'] ?? 'Error al crear cliente');
+      } catch (e) {
+        if (e is Exception) rethrow;
+        throw Exception('Error al crear cliente: ${response.body}');
+      }
+    }
   }
 
   @override
   Future<void> updateCliente(ClienteModel cliente) async {
-    await client.put(
+    final response = await client.put(
       Uri.parse('$baseUrl/${cliente.idCliente}'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(cliente.toJson()),
     );
+    
+    if (response.statusCode != 200) {
+      try {
+        final error = jsonDecode(response.body);
+        
+        if (error['validationErrors'] != null) {
+          final validationErrors = error['validationErrors'] as Map<String, dynamic>;
+          final errorMessages = validationErrors.values.join('\n');
+          throw Exception(errorMessages);
+        }
+        
+        throw Exception(error['message'] ?? error['error'] ?? 'Error al actualizar cliente');
+      } catch (e) {
+        if (e is Exception) rethrow;
+        throw Exception('Error al actualizar cliente: ${response.body}');
+      }
+    }
   }
 
   @override
   Future<void> deleteCliente(int id) async {
-    await client.delete(Uri.parse('$baseUrl/$id'));
+    final response = await client.delete(Uri.parse('$baseUrl/$id'));
+    
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      try {
+        final error = jsonDecode(response.body);
+        
+        if (error['validationErrors'] != null) {
+          final validationErrors = error['validationErrors'] as Map<String, dynamic>;
+          final errorMessages = validationErrors.values.join('\n');
+          throw Exception(errorMessages);
+        }
+        
+        throw Exception(error['message'] ?? error['error'] ?? 'Error al eliminar cliente');
+      } catch (e) {
+        if (e is Exception) rethrow;
+        throw Exception('Error al eliminar cliente: ${response.body}');
+      }
+    }
   }
 }

@@ -22,11 +22,9 @@ class PedidoRepositoryImpl implements PedidoRepository {
   @override
   Future<Pedido> createPedido(Pedido pedido) async {
     final pedidoModel = PedidoModel(
-      idCliente: pedido.idCliente,
-      idPlato: pedido.idPlato,
-      cantidad: pedido.cantidad,
-      fecha: pedido.fecha,
-      total: pedido.total,
+      numeroMesa: pedido.numeroMesa,
+      plato: pedido.plato,
+      cliente: pedido.cliente,
     );
     await dataSource.createPedido(pedidoModel);
     return pedidoModel;
@@ -36,11 +34,9 @@ class PedidoRepositoryImpl implements PedidoRepository {
   Future<Pedido> updatePedido(int id, Pedido pedido) async {
     final pedidoModel = PedidoModel(
       idPedido: id,
-      idCliente: pedido.idCliente,
-      idPlato: pedido.idPlato,
-      cantidad: pedido.cantidad,
-      fecha: pedido.fecha,
-      total: pedido.total,
+      numeroMesa: pedido.numeroMesa,
+      plato: pedido.plato,
+      cliente: pedido.cliente,
     );
     await dataSource.updatePedido(pedidoModel);
     return pedidoModel;

@@ -23,6 +23,17 @@ class _ClientePageState extends State<ClientePage> {
     loadClientes();
   }
 
+  void _showToast(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red : Colors.green,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
   Future<void> loadClientes() async {
     setState(() => isLoading = true);
     try {
@@ -34,9 +45,7 @@ class _ClientePageState extends State<ClientePage> {
     } catch (e) {
       setState(() => isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        _showToast('Error al cargar clientes: ${e.toString().replaceAll('Exception: ', '')}', isError: true);
       }
     }
   }
@@ -46,15 +55,11 @@ class _ClientePageState extends State<ClientePage> {
       await repository.deleteCliente(id);
       loadClientes();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Cliente eliminado')),
-        );
+        _showToast('Cliente eliminado exitosamente');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        _showToast(e.toString().replaceAll('Exception: ', ''), isError: true);
       }
     }
   }
@@ -106,22 +111,23 @@ class _ClientePageState extends State<ClientePage> {
               try {
                 if (cliente == null) {
                   await repository.createCliente(newCliente);
+                  Navigator.pop(ctx);
+                  loadClientes();
+                  if (mounted) {
+                    _showToast('Cliente creado exitosamente');
+                  }
                 } else {
                   await repository.updateCliente(cliente.idCliente!, newCliente);
-                }
-                Navigator.pop(ctx);
-                loadClientes();
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(cliente == null ? 'Cliente creado' : 'Cliente actualizado')),
-                  );
+                  Navigator.pop(ctx);
+                  loadClientes();
+                  if (mounted) {
+                    _showToast('Cliente actualizado exitosamente');
+                  }
                 }
               } catch (e) {
                 Navigator.pop(ctx);
                 if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error: $e')),
-                  );
+                  _showToast(e.toString().replaceAll('Exception: ', ''), isError: true);
                 }
               }
             },

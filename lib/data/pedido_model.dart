@@ -1,36 +1,48 @@
 import '../domain/entity/pedido.dart';
+import '../domain/entity/cliente.dart';
+import '../domain/entity/plato.dart';
+import 'cliente_model.dart';
+import 'plato_model.dart';
 
 class PedidoModel extends Pedido {
   PedidoModel({
     super.idPedido,
-    required super.idCliente,
-    required super.idPlato,
-    required super.cantidad,
-    required super.fecha,
-    required super.total,
+    required super.numeroMesa,
+    required super.plato,
+    required super.cliente,
   });
 
   factory PedidoModel.fromJson(Map<String, dynamic> json) {
     return PedidoModel(
       idPedido: json['idPedido'],
-      idCliente: json['idCliente'] ?? 0,
-      idPlato: json['idPlato'] ?? 0,
-      cantidad: json['cantidad'] ?? 0,
-      fecha: json['fecha'] != null 
-          ? DateTime.parse(json['fecha']) 
-          : DateTime.now(),
-      total: (json['total'] ?? 0).toDouble(),
+      numeroMesa: json['numeroMesa'] ?? 1,
+      plato: json['plato'] != null 
+          ? PlatoModel.fromJson(json['plato'])
+          : PlatoModel(nombre: '', descripcion: '', precio: 0),
+      cliente: json['cliente'] != null
+          ? ClienteModel.fromJson(json['cliente'])
+          : ClienteModel(nombre: '', email: '', telefono: ''),
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {
+    final json = {
       if (idPedido != null) 'idPedido': idPedido,
-      'idCliente': idCliente,
-      'idPlato': idPlato,
-      'cantidad': cantidad,
-      'fecha': fecha.toIso8601String(),
-      'total': total,
+      'numeroMesa': numeroMesa,
+      'plato': {
+        'idPlato': plato.idPlato ?? 0,
+        'nombre': plato.nombre,
+        'descripcion': plato.descripcion,
+        'precio': plato.precio,
+      },
+      'cliente': {
+        'idCliente': cliente.idCliente ?? 0,
+        'nombre': cliente.nombre,
+        'email': cliente.email,
+        'telefono': cliente.telefono,
+      },
     };
+    print('PedidoModel.toJson(): $json'); // Debug
+    return json;
   }
 }

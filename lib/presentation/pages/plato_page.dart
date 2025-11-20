@@ -23,6 +23,17 @@ class _PlatoPageState extends State<PlatoPage> {
     loadPlatos();
   }
 
+  void _showToast(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red : Colors.green,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
   Future<void> loadPlatos() async {
     setState(() => isLoading = true);
     try {
@@ -34,9 +45,7 @@ class _PlatoPageState extends State<PlatoPage> {
     } catch (e) {
       setState(() => isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        _showToast('Error al cargar platos: ${e.toString().replaceAll('Exception: ', '')}', isError: true);
       }
     }
   }
@@ -46,15 +55,11 @@ class _PlatoPageState extends State<PlatoPage> {
       await repository.deletePlato(id);
       loadPlatos();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Plato eliminado')),
-        );
+        _showToast('Plato eliminado exitosamente');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        _showToast(e.toString().replaceAll('Exception: ', ''), isError: true);
       }
     }
   }
@@ -82,7 +87,7 @@ class _PlatoPageState extends State<PlatoPage> {
               ),
               TextField(
                 controller: precioController,
-                decoration: const InputDecoration(labelText: 'Precio'),
+                decoration: const InputDecoration(labelText: 'Precio (S/)'),
                 keyboardType: TextInputType.number,
               ),
             ],
@@ -105,22 +110,23 @@ class _PlatoPageState extends State<PlatoPage> {
               try {
                 if (plato == null) {
                   await repository.createPlato(newPlato);
+                  Navigator.pop(ctx);
+                  loadPlatos();
+                  if (mounted) {
+                    _showToast('Plato creado exitosamente');
+                  }
                 } else {
                   await repository.updatePlato(plato.idPlato!, newPlato);
-                }
-                Navigator.pop(ctx);
-                loadPlatos();
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(plato == null ? 'Plato creado' : 'Plato actualizado')),
-                  );
+                  Navigator.pop(ctx);
+                  loadPlatos();
+                  if (mounted) {
+                    _showToast('Plato actualizado exitosamente');
+                  }
                 }
               } catch (e) {
                 Navigator.pop(ctx);
                 if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error: $e')),
-                  );
+                  _showToast(e.toString().replaceAll('Exception: ', ''), isError: true);
                 }
               }
             },
@@ -159,7 +165,7 @@ class _PlatoPageState extends State<PlatoPage> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              '\$${plato.precio.toStringAsFixed(2)}',
+                              'S/ ${plato.precio.toStringAsFixed(2)}',
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
